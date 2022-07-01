@@ -1,0 +1,13 @@
+.box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid black;
+  float: left;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 20px; 
+}
+
+.box-container {
+  height: 20px;
+}
