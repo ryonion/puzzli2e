@@ -1,6 +1,12 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
+import {
+  getAuth,
+  signOut,
+} from "firebase/auth";
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyAOvejZqOTwFwWyQhkve44cKI1w--aN2Vg",
   authDomain: "puzzli2e.firebaseapp.com",
@@ -11,6 +17,15 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
+const auth = getAuth(app);
 const db = getDatabase(app);
-export default db;
+
+const logout = () => {
+  signOut(auth);
+};
+
+export {
+  db,
+  auth,
+  logout,
+};

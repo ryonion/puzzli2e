@@ -8,6 +8,10 @@
   line-height: 20px; 
 }
 
+.box.inactive {
+  border: 1px solid grey;
+}
+
 .box-container {
   height: 20px;
 }

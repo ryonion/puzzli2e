@@ -1,55 +1,49 @@
 
 import { useEffect, useState } from "react";
-import db from "../../firebase";
-import { set, ref } from "firebase/database";
+import { db } from "../../firebase";
+import { set, ref, push } from "firebase/database";
 import { useListVals, useObjectVal } from "react-firebase-hooks/database";
 import { getBoolArrFromInt, getIntFromBoolArr, randomProperty } from "components/common/helper";
 import "./main.css";
 
-// const Box = ({
-//   checked,
-//   onClick,
-// }) => {
-//   const [boxChecked, setBoxChecked] = useState(false);
-//   useEffect(() => {
-//     setBoxChecked(checked);
-//   }, [checked]);
-
-//   const toggleChecked = () => {
-//     const newVal = !boxChecked;
-//     setBoxChecked(newVal);
-//     onClick(newVal);
-//   };
-//   return (
-//     <div
-//       className="box"
-//       onClick={toggleChecked}
-//     >
-//       {
-//         boxChecked
-//         ? <>X</>
-//         : <></>
-//       }
-//     </div>
-//   );
-// };
+const Box = ({
+  checked,
+  onClick,
+  index,
+}) => {
+  return (
+    <div
+      className="box"
+      key={index}
+      onClick={() => {
+        onClick(checked, index);
+      }}
+    >
+      {
+        checked
+        ? <>X</>
+        : <></>
+      }
+    </div>
+  );
+};
 
 const CheckIn = ({
   days,
+  planId,
 }) => {
-  const [plan] = useObjectVal(ref(db, "plans/-N6BhpAMvqnb8_zZSRLB"));
-  const [pieces] = useObjectVal(ref(db, "pieces/1"));
+  const [plan] = useObjectVal(ref(db, `plans/${planId}`));
+  const [pieces] = useObjectVal(ref(db, `pieces/${planId}`));
   const [boxValues, setBoxValues] = useState([]);
-  const [plist] = useListVals(ref(db, "pieces/1"));
+  const [plist] = useListVals(ref(db, `plans/${planId}`));
 
   // todo: get pieces as array so we can filter them.
   useEffect(() => {
     console.log(plist);
   }, [plist]);
 
-
   const savePlan = (planValues, addPiece) => {
-    set(ref(db, "plans/-N6BhpAMvqnb8_zZSRLB/status"), getIntFromBoolArr(planValues, days));
+    set(ref(db, `plans/${planId}/status`), getIntFromBoolArr(planValues, days));
     const keys = Object.keys(pieces);
     if (addPiece) {
       let maxLoop = 100;
@@ -57,7 +51,7 @@ const CheckIn = ({
         const key = randomProperty(pieces);
         if (!pieces[key].acquired) {
           pieces[key].acquired = true;
-          set(ref(db, `pieces/1/${key}`), pieces[key]);
+          set(ref(db, `pieces/${planId}/${key}`), pieces[key]);
           break;
         }
         maxLoop--;
@@ -66,7 +60,7 @@ const CheckIn = ({
       for (const key in pieces) {
         if (pieces[key].acquired) {
           pieces[key].acquired = false;
-          set(ref(db, `pieces/1/${key}`), pieces[key]);
+          set(ref(db, `pieces/${planId}/${key}`), pieces[key]);
           break;
         }
       }
@@ -76,7 +70,7 @@ const CheckIn = ({
   // new data
   // useEffect(() => {
   //   push(ref(db, "plans"), {
-  //     userId: 1,
+  //     userId: 2,
   //     status: 0,
   //   });
   // }, []);
@@ -95,25 +89,25 @@ const CheckIn = ({
   }, [plan]);
 
   return (
-    <div className="box-container">
-      {boxValues.map((val, idx) => {
-        return (
-          <div
-            key={idx}
-            className="box"
-            onClick={() => {
-              toggleChecked(val, idx);
-            }}
-          >
-            {
-              val
-              ? <>X</>
-              : <></>
-            }
-          </div>
-        );
-      })}
-    </div>
+    <>
+      {plan
+        ? (
+            <div className="box-container">
+              {boxValues.map((val, idx) => {
+                return (
+                  <Box
+                    key={idx}
+                    index={idx}
+                    checked={val}
+                    onClick={toggleChecked}
+                  />
+                );
+              })}
+            </div>
+          )
+        : null
+      }
+    </>
   );
 };
 

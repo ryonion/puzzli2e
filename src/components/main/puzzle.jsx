@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Stage, Layer } from "react-konva";
 import PuzzleImage from "components/puzzle/puzzleImage";
 import Konva from "konva";
-import db from "../../firebase";
+import { db } from "../../firebase";
 import { set, ref, push } from "firebase/database";
 import { useList } from "react-firebase-hooks/database";
 import { Piece } from "./Piece";
@@ -17,14 +17,14 @@ const Playground = {
 const scale = Playground.width / 500;
 
 // todo: apply scale, so piece size and x,y are consistent across devices
-const Board = () => {
+const Board = ({ planId }) => {
   const [pieces, setPieces] = useState(null);
   const stageRef = useRef(null);
   const [pieceLayer, setPieceLayer] = useState(null);
-  const [snapshots, loading] = useList(ref(db, "pieces/1"));
+  const [snapshots, loading] = useList(ref(db, `pieces/${planId}`));
   const [myImage, setImage] = useState(null);
   const addPiece = (Piece) => {
-    push(ref(db, "pieces/1"), Piece);
+    push(ref(db, `pieces/${planId}`), Piece);
   };
 
   // todo: save imageUrl to firebase
@@ -99,14 +99,13 @@ const Board = () => {
   };
 
   const initializePieces = () => {
-    const updatedPieces = [];
     for (let i = 0; i < ROWS; i++) {
       for (let j = 0; j < COLS; j++) {
-        // updatedPieces.push(new Piece(i, j, Playground.width / COLS, Playground.height / ROWS));
-        addPiece(new Piece(i, j, Playground.width / COLS, Playground.height / ROWS));
+        const newPiece = new Piece(i, j, Playground.width / COLS, Playground.height / ROWS);
+        moveToRandomPos(newPiece);
+        addPiece(newPiece);
       }
     }
-    // setPieces(updatedPieces);
   };
 
   // const moveToRandomPos = (konvaShape) => {
@@ -195,7 +194,7 @@ const Board = () => {
     const pieceToSave = pieces[piece.attrs.id];
     pieceToSave.x = piece.x() / scale;
     pieceToSave.y = piece.y() / scale;
-    set(ref(db, `pieces/1/${piece.attrs.id}`), pieceToSave);
+    set(ref(db, `pieces/${planId}/${piece.attrs.id}`), pieceToSave);
   };
 
   // ---------------- useEffect --------------------
