@@ -34,7 +34,7 @@ const App = () => {
     if (!user) {
       signInWithRedirect(auth, googleProvider);
     } else {
-      const userUid = getUserGoogleUId(user);
+      const userUid = user.uid;
       get(ref(db, `users/${userUid}`)).then((snapshot) => {
         if (!snapshot.exists()) {
           createUser(user, userUid);

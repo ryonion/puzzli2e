@@ -7,17 +7,21 @@ import { set, ref, push } from "firebase/database";
 import { useList } from "react-firebase-hooks/database";
 import { Piece } from "./Piece";
 
-const ROWS = 5;
-const COLS = 5;
+const playgroundWidth = 500;
+
 const Playground = {
-  width: Math.min(window.innerWidth, 400 + 100),
-  height: Math.min(window.innerWidth, 400 + 100),
+  width: Math.min(window.innerWidth, playgroundWidth),
+  height: Math.min(window.innerWidth, playgroundWidth),
 };
 
-const scale = Playground.width / 500;
+const navHeight = 56;
+const checkInRowHeight = 20;
+const stageOffsetX = navHeight + checkInRowHeight;
+
+const scale = Playground.width / playgroundWidth;
 
 // todo: apply scale, so piece size and x,y are consistent across devices
-const Board = ({ planId }) => {
+const Board = ({ planId, rows, cols }) => {
   const [pieces, setPieces] = useState(null);
   const stageRef = useRef(null);
   const [pieceLayer, setPieceLayer] = useState(null);
@@ -42,10 +46,10 @@ const Board = ({ planId }) => {
       sceneFunc: (context) => {
         // todo: shorten
         context.beginPath();
-        context.drawImage(image, piece.colIndex * image.naturalWidth / COLS,
-            piece.rowIndex * image.naturalHeight / ROWS,
-            image.naturalWidth / COLS,
-            image.naturalHeight / ROWS, 0, 0, scaledWidth, scaledHeight);
+        context.drawImage(image, piece.colIndex * image.naturalWidth / cols,
+            piece.rowIndex * image.naturalHeight / rows,
+            image.naturalWidth / cols,
+            image.naturalHeight / rows, 0, 0, scaledWidth, scaledHeight);
         context.rect(0, 0, scaledWidth, scaledHeight);
         context.closePath();
         context.fillStrokeShape(shape);
@@ -99,9 +103,9 @@ const Board = ({ planId }) => {
   };
 
   const initializePieces = () => {
-    for (let i = 0; i < ROWS; i++) {
-      for (let j = 0; j < COLS; j++) {
-        const newPiece = new Piece(i, j, Playground.width / COLS, Playground.height / ROWS);
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        const newPiece = new Piece(i, j, Playground.width / cols, Playground.height / rows);
         moveToRandomPos(newPiece);
         addPiece(newPiece);
       }
@@ -111,7 +115,7 @@ const Board = ({ planId }) => {
   // const moveToRandomPos = (konvaShape) => {
   //   const loc = {
   //     x: Math.random() * (Playground.width - konvaShape.width()),
-  //     y: Math.random() * (Playground.height - konvaShape.height()),
+  //     y: Math.random() * (Playground.height - konvaShape.height() - stageOffsetX),
   //   };
   //   konvaShape.position(loc);
   // };
@@ -119,7 +123,7 @@ const Board = ({ planId }) => {
   const moveToRandomPos = (piece) => {
     const loc = {
       x: Math.random() * (Playground.width - piece.width * scale),
-      y: Math.random() * (Playground.height - piece.width * scale),
+      y: Math.random() * (Playground.height - piece.height * scale),
     };
     piece.x = loc.x;
     piece.y = loc.y;
@@ -137,7 +141,7 @@ const Board = ({ planId }) => {
       xMin: piece.x() >= 0,
       xMax: piece.x() <= Playground.width - piece.width(),
       yMin: piece.y() >= 0,
-      yMax: piece.y() <= window.innerHeight - piece.height() - 20,
+      yMax: piece.y() <= window.innerHeight - piece.height() - stageOffsetX,
     };
   };
 
@@ -171,7 +175,7 @@ const Board = ({ planId }) => {
       }
 
       if (!inBoundStatus.yMax) {
-        correctedY = window.innerHeight - shape.height() - 20;
+        correctedY = window.innerHeight - shape.height() - stageOffsetX;
         needCorrection = true;
       }
 
@@ -247,7 +251,7 @@ const Board = ({ planId }) => {
       x={0}
       y={0}
       width={Playground.width}
-      height={window.innerHeight - 20}
+      height={window.innerHeight - stageOffsetX}
       ref={stageRef}
       onDragMove={(e) => {
         onMouseMove(e.evt, e.target);

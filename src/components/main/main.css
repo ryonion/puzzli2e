@@ -10,6 +10,7 @@
 
 .box.inactive {
   border: 1px solid grey;
+  background-color: #ccc;
 }
 
 .box-container {

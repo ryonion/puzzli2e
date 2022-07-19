@@ -6,7 +6,6 @@ import {
   signOut,
 } from "firebase/auth";
 
-
 const firebaseConfig = {
   apiKey: "AIzaSyAOvejZqOTwFwWyQhkve44cKI1w--aN2Vg",
   authDomain: "puzzli2e.firebaseapp.com",

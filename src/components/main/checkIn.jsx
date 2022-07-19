@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
-import { set, ref, push } from "firebase/database";
+import { set, ref } from "firebase/database";
 import { useListVals, useObjectVal } from "react-firebase-hooks/database";
 import { getBoolArrFromInt, getIntFromBoolArr, randomProperty } from "components/common/helper";
 import "./main.css";
@@ -10,13 +10,14 @@ const Box = ({
   checked,
   onClick,
   index,
+  enabled,
 }) => {
   return (
     <div
-      className="box"
+      className={`box ${enabled ? "" : "inactive"}`}
       key={index}
       onClick={() => {
-        onClick(checked, index);
+        if (enabled) onClick(checked, index);
       }}
     >
       {
@@ -99,6 +100,7 @@ const CheckIn = ({
                     key={idx}
                     index={idx}
                     checked={val}
+                    enabled={idx === 0 || boxValues[idx - 1]}
                     onClick={toggleChecked}
                   />
                 );

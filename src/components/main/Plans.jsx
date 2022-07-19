@@ -32,7 +32,7 @@ const PlanList = () => {
     };
 
     if (!loading && user) {
-      get(ref(db, `users/${user.providerData[0].uid}`)).then((snapshot) => {
+      get(ref(db, `users/${user.uid}`)).then((snapshot) => {
         getPlan(snapshot.val().plans);
       }).catch((error) => {
         console.error(error);
