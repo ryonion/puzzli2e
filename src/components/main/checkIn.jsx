@@ -39,9 +39,9 @@ const CheckIn = ({
   const [plist] = useListVals(ref(db, `plans/${planId}`));
 
   // todo: get pieces as array so we can filter them.
-  useEffect(() => {
-    console.log(plist);
-  }, [plist]);
+  // useEffect(() => {
+  //   console.log(plist);
+  // }, [plist]);
 
   const savePlan = (planValues, addPiece) => {
     set(ref(db, `plans/${planId}/status`), getIntFromBoolArr(planValues, days));
