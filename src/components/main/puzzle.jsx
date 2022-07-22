@@ -91,13 +91,16 @@ const Board = ({ planId, rows, cols }) => {
   };
 
   const initializePieces = () => {
+    let count = 0;
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
         const newPiece = new Piece(i, j, Playground.width / cols, Playground.height / rows);
         moveToRandomPos(newPiece);
+        count++;
         addPiece(newPiece);
       }
     }
+    console.log(count);
   };
 
   // const moveToRandomPos = (konvaShape) => {
@@ -201,6 +204,7 @@ const Board = ({ planId, rows, cols }) => {
 
   useEffect(() => {
     loadImage();
+    // console.log("hello")
     // initializePieces();
     const layer = new Konva.Layer();
     setPieceLayer(layer);

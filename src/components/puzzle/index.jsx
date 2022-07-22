@@ -102,7 +102,7 @@ const Board = () => {
   // ---------------- useEffect --------------------
 
   useEffect(() => {
-    initializePieces();
+    // initializePieces();
     const layer = new Konva.Layer();
     setPieceLayer(layer);
     stageRef.current.add(layer);
