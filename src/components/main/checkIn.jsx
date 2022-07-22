@@ -2,8 +2,10 @@
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { set, ref } from "firebase/database";
-import { useListVals, useObjectVal } from "react-firebase-hooks/database";
-import { getBoolArrFromInt, getIntFromBoolArr, randomProperty } from "components/common/helper";
+import { useList, useObjectVal } from "react-firebase-hooks/database";
+import { getBoolArrFromInt, getIntFromBoolArr } from "components/common/helper";
+import { Playground, stageOffsetY, scale } from "Playground";
+
 import "./main.css";
 
 const Box = ({
@@ -29,53 +31,62 @@ const Box = ({
   );
 };
 
+const getRandomPos = (piece) => {
+  const loc = {
+    x: Math.random() * (Playground.width - piece.width * scale),
+    y: Math.random() * (Playground.height - piece.height * scale - stageOffsetY),
+  };
+  return { x: loc.x, y: loc.y };
+};
+
 const CheckIn = ({
   days,
   planId,
 }) => {
+  const [pieces, setPieces] = useState([]);
   const [plan] = useObjectVal(ref(db, `plans/${planId}`));
-  const [pieces] = useObjectVal(ref(db, `pieces/${planId}`));
   const [boxValues, setBoxValues] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [plist] = useListVals(ref(db, `plans/${planId}`));
+  const [plist] = useList(ref(db, `pieces/${planId}`));
+  const [addedPieces, setAddedPieces] = useState([]);
 
-  // todo: get pieces as array so we can filter them.
-  // useEffect(() => {
-  //   console.log(plist);
-  // }, [plist]);
+  useEffect(() => {
+    const toSave = [];
+    for (const p of plist) {
+      toSave.push({
+        key: p.key,
+        value: p.val(),
+      });
+    }
+    setPieces(toSave);
+  }, [plist]);
 
   const savePlan = (planValues, addPiece) => {
     set(ref(db, `plans/${planId}/status`), getIntFromBoolArr(planValues, days));
-    const keys = Object.keys(pieces);
     if (addPiece) {
-      let maxLoop = 100;
-      while (keys.length && maxLoop) {
-        const key = randomProperty(pieces);
-        if (!pieces[key].acquired) {
-          pieces[key].acquired = true;
-          set(ref(db, `pieces/${planId}/${key}`), pieces[key]);
-          break;
-        }
-        maxLoop--;
-      }
+      const availablePieces = pieces.filter((x) => !x.value.acquired);
+      const toAdd = availablePieces[Math.floor(Math.random() * availablePieces.length)];
+      setAddedPieces([...addedPieces, toAdd.key]);
+      toAdd.value.acquired = true;
+      const newPos = getRandomPos(toAdd.value);
+      toAdd.value.x = newPos.x;
+      toAdd.value.y = newPos.y;
+      set(ref(db, `pieces/${planId}/${toAdd.key}`), toAdd.value);
     } else {
-      for (const key in pieces) {
-        if (pieces[key].acquired) {
-          pieces[key].acquired = false;
-          set(ref(db, `pieces/${planId}/${key}`), pieces[key]);
-          break;
-        }
+      if (addedPieces.length) {
+        const lastPieceKey = addedPieces.pop();
+        const lastAddedPiece = pieces.find((x) => x.key === lastPieceKey);
+        setAddedPieces(addedPieces);
+        lastAddedPiece.value.acquired = false;
+        set(ref(db, `pieces/${planId}/${lastPieceKey}`), lastAddedPiece.value);
+      } else {
+        const addedPieces = pieces.filter((x) => x.value.acquired);
+        const toRemove = addedPieces[Math.floor(Math.random() * addedPieces.length)];
+        toRemove.value.acquired = false;
+        set(ref(db, `pieces/${planId}/${toRemove.key}`), toRemove.value);
       }
     }
   };
-
-  // new data
-  // useEffect(() => {
-  //   push(ref(db, "plans"), {
-  //     userId: 2,
-  //     status: 0,
-  //   });
-  // }, []);
 
   const toggleChecked = (oldVal, idx) => {
     const newBoxValues = [...boxValues];
@@ -88,8 +99,7 @@ const CheckIn = ({
     if (plan) {
       const boxes = getBoolArrFromInt(plan["status"], days);
       setBoxValues(boxes);
-      const firstDisabled = boxes.findIndex((x)=>!x);
-      console.log(firstDisabled)
+      const firstDisabled = boxes.findIndex((x) => !x);
       setCurrentIdx(firstDisabled === -1 ? boxes.length - 1 : firstDisabled - 1);
     }
   }, [plan]);

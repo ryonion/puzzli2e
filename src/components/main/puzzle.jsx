@@ -6,19 +6,7 @@ import { db } from "../../firebase";
 import { set, ref, push } from "firebase/database";
 import { useList } from "react-firebase-hooks/database";
 import { Piece } from "./Piece";
-
-const playgroundWidth = 500;
-
-const Playground = {
-  width: Math.min(window.innerWidth, playgroundWidth),
-  height: Math.min(window.innerWidth, playgroundWidth),
-};
-
-const navHeight = 56;
-const checkInRowHeight = 20;
-const stageOffsetX = navHeight + checkInRowHeight;
-
-const scale = Playground.width / playgroundWidth;
+import { Playground, stageOffsetY, scale } from "Playground";
 
 // todo: apply scale, so piece size and x,y are consistent across devices
 const Board = ({ planId, rows, cols }) => {
@@ -123,7 +111,7 @@ const Board = ({ planId, rows, cols }) => {
   const moveToRandomPos = (piece) => {
     const loc = {
       x: Math.random() * (Playground.width - piece.width * scale),
-      y: Math.random() * (Playground.height - piece.height * scale),
+      y: Math.random() * (Playground.height - piece.height * scale - stageOffsetY),
     };
     piece.x = loc.x;
     piece.y = loc.y;
@@ -141,7 +129,7 @@ const Board = ({ planId, rows, cols }) => {
       xMin: piece.x() >= 0,
       xMax: piece.x() <= Playground.width - piece.width(),
       yMin: piece.y() >= 0,
-      yMax: piece.y() <= window.innerHeight - piece.height() - stageOffsetX,
+      yMax: piece.y() <= window.innerHeight - piece.height() - stageOffsetY,
     };
   };
 
@@ -175,7 +163,7 @@ const Board = ({ planId, rows, cols }) => {
       }
 
       if (!inBoundStatus.yMax) {
-        correctedY = window.innerHeight - shape.height() - stageOffsetX;
+        correctedY = window.innerHeight - shape.height() - stageOffsetY;
         needCorrection = true;
       }
 
@@ -251,7 +239,7 @@ const Board = ({ planId, rows, cols }) => {
       x={0}
       y={0}
       width={Playground.width}
-      height={window.innerHeight - stageOffsetX}
+      height={window.innerHeight - stageOffsetY}
       ref={stageRef}
       onDragMove={(e) => {
         onMouseMove(e.evt, e.target);

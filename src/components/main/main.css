@@ -5,12 +5,14 @@
   float: left;
   text-align: center;
   vertical-align: middle;
-  line-height: 20px; 
+  line-height: 20px;
+  cursor: pointer;
 }
 
 .box.inactive {
   border: 1px solid grey;
   background-color: #ccc;
+  cursor:not-allowed;
 }
 
 .box-container {
