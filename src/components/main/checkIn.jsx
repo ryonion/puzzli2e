@@ -36,6 +36,7 @@ const CheckIn = ({
   const [plan] = useObjectVal(ref(db, `plans/${planId}`));
   const [pieces] = useObjectVal(ref(db, `pieces/${planId}`));
   const [boxValues, setBoxValues] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
   const [plist] = useListVals(ref(db, `plans/${planId}`));
 
   // todo: get pieces as array so we can filter them.
@@ -85,7 +86,11 @@ const CheckIn = ({
 
   useEffect(() => {
     if (plan) {
-      setBoxValues(getBoolArrFromInt(plan["status"], days));
+      const boxes = getBoolArrFromInt(plan["status"], days);
+      setBoxValues(boxes);
+      const firstDisabled = boxes.findIndex((x)=>!x);
+      console.log(firstDisabled)
+      setCurrentIdx(firstDisabled === -1 ? boxes.length - 1 : firstDisabled - 1);
     }
   }, [plan]);
 
@@ -100,7 +105,7 @@ const CheckIn = ({
                     key={idx}
                     index={idx}
                     checked={val}
-                    enabled={idx === 0 || boxValues[idx - 1]}
+                    enabled={idx === currentIdx || idx === currentIdx + 1}
                     onClick={toggleChecked}
                   />
                 );
