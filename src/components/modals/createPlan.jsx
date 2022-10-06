@@ -32,8 +32,12 @@ const CreatePlan = ({
 
   const addPlanToUser = (planId) => {
     get(ref(db, `users/${user.uid}/plans`)).then((snapshot) => {
-      const updated = snapshot.val();
-      updated.push(planId);
+      let updated = snapshot.val();
+      if (!updated) {
+        updated = [planId];
+      } else {
+        updated.push(planId);
+      }
       set(ref(db, `users/${user.uid}/plans`), updated);
     });
   };

@@ -28,7 +28,6 @@ function handleUpload(file, setPercent, userId, planId, setError) {
       () => {
         // download url
         getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          console.log(planId, "imageUrl", url);
           updatePlan(planId, "imageUrl", url);
         });
       },
