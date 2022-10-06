@@ -1,4 +1,7 @@
 import Konva from "konva";
+import { Playground, stageOffsetY, scale } from "Playground";
+import { ref, push } from "firebase/database";
+import { db } from "../../firebase";
 
 // todo: remove constructor, use Konva.Shape directly, add custom attributes to Konva nodes
 class Piece {
@@ -37,6 +40,30 @@ class Piece {
   };
 };
 
+const addPiece = (planId, Piece) => {
+  push(ref(db, `pieces/${planId}`), Piece);
+};
+
+const moveToRandomPos = (piece) => {
+  const loc = {
+    x: Math.random() * (Playground.width - piece.width * scale),
+    y: Math.random() * (Playground.height - piece.height * scale - stageOffsetY),
+  };
+  piece.x = loc.x;
+  piece.y = loc.y;
+};
+
+const initializePieces = (planId, rows=5, cols=5) => {
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const newPiece = new Piece(i, j, Playground.width / scale / cols, Playground.height / scale / rows);
+      moveToRandomPos(newPiece);
+      addPiece(planId, newPiece);
+    }
+  }
+};
+
 export {
   Piece,
+  initializePieces,
 };

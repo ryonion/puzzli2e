@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { set, ref } from "firebase/database";
 import { useList, useObjectVal } from "react-firebase-hooks/database";
-import { getBoolArrFromInt, getIntFromBoolArr } from "components/common/helper";
+import { getBoolArrFromInt, getIntFromBoolArr } from "helpers/utils";
 import { Playground, stageOffsetY, scale } from "Playground";
 
 import "./main.css";

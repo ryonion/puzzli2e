@@ -20,7 +20,7 @@ const Navi = () => {
 
   return (
     <Navbar bg="light" expand="lg">
-      <Container>
+      <Container fluid>
         <Navbar.Brand href="#home">Puzzli2e</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">

@@ -1,25 +1,21 @@
 import { useState, useRef, useEffect } from "react";
-import { Stage, Layer } from "react-konva";
-import PuzzleImage from "components/puzzle/puzzleImage";
+import { Stage } from "react-konva";
 import Konva from "konva";
 import { db } from "../../firebase";
-import { set, ref, push } from "firebase/database";
-import { useList } from "react-firebase-hooks/database";
-import { Piece } from "./Piece";
+import { set, ref } from "firebase/database";
+import { useList, useObjectVal } from "react-firebase-hooks/database";
 import { Playground, stageOffsetY, scale } from "Playground";
 
-// todo: apply scale, so piece size and x,y are consistent across devices
 const Board = ({ planId, rows, cols }) => {
-  const [pieces, setPieces] = useState(null);
+  const [pieceDict, setPieces] = useState(null);
   const stageRef = useRef(null);
-  const [pieceLayer, setPieceLayer] = useState(null);
-  const [snapshots, loading] = useList(ref(db, `pieces/${planId}`));
+  const [pieces, piecesLoading] = useList(ref(db, `pieces/${planId}`));
+  const [plan, planLoading] = useObjectVal(ref(db, `plans/${planId}`));
   const [myImage, setImage] = useState(null);
-  const addPiece = (Piece) => {
-    push(ref(db, `pieces/${planId}`), Piece);
-  };
 
-  // todo: save imageUrl to firebase
+  const bgLayer = new Konva.Layer({ listening: false, name: "bgLayer" });
+  const pieceLayer = new Konva.Layer({ name: "pieceLayer" });
+
   const createNode = (piece, image) => {
     const scaledWidth = piece.width * scale;
     const scaledHeight = piece.height * scale;
@@ -48,25 +44,10 @@ const Board = ({ planId, rows, cols }) => {
     return shape;
   };
 
-  const getPieces = () => {
-    const pieceDict = {};
-    for (const p of snapshots) {
-      const piece = p.val();
-      piece.id = p.key;
-      if (piece.acquired) {
-        const newNode = createNode(piece, myImage);
-        pieceDict[p.key] = piece;
-        pieceLayer.add(newNode);
-        pieceLayer.zIndex(1);
-        pieceLayer.batchDraw();
-      }
-    }
-    setPieces(pieceDict);
-  };
-
   const updatePieces = () => {
+    const pieceLayer = stageRef.current.children.find((x) => x.attrs.name === "pieceLayer");
     const pieceDict = {};
-    for (const p of snapshots) {
+    for (const p of pieces) {
       const piece = p.val();
       if (piece.acquired) {
         const node = pieceLayer.children.find((x) => x.attrs.id === p.key);
@@ -87,44 +68,8 @@ const Board = ({ planId, rows, cols }) => {
         }
       }
     }
+    pieceLayer.batchDraw();
     setPieces(pieceDict);
-  };
-
-  const initializePieces = () => {
-    let count = 0;
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        const newPiece = new Piece(i, j, Playground.width / cols, Playground.height / rows);
-        moveToRandomPos(newPiece);
-        count++;
-        addPiece(newPiece);
-      }
-    }
-    console.log(count);
-  };
-
-  // const moveToRandomPos = (konvaShape) => {
-  //   const loc = {
-  //     x: Math.random() * (Playground.width - konvaShape.width()),
-  //     y: Math.random() * (Playground.height - konvaShape.height() - stageOffsetX),
-  //   };
-  //   konvaShape.position(loc);
-  // };
-
-  const moveToRandomPos = (piece) => {
-    const loc = {
-      x: Math.random() * (Playground.width - piece.width * scale),
-      y: Math.random() * (Playground.height - piece.height * scale - stageOffsetY),
-    };
-    piece.x = loc.x;
-    piece.y = loc.y;
-  };
-
-  const getScaledPointerPos = (loc) => {
-    return {
-      x: loc.x - stageRef.current.x(),
-      y: loc.y - stageRef.current.y(),
-    };
   };
 
   const inBound = (piece) => {
@@ -142,9 +87,8 @@ const Board = ({ planId, rows, cols }) => {
     return Math.sqrt(x * x + y * y);
   };
 
-  const onMouseMove = (evt, shape) => {
+  const onMouseMove = (shape) => {
     if (shape) {
-      evt = getScaledPointerPos(stageRef.current.getPointerPosition());
       const inBoundStatus = inBound(shape);
       let correctedX = shape.x();
       let correctedY = shape.y();
@@ -186,57 +130,37 @@ const Board = ({ planId, rows, cols }) => {
   };
 
   const savePiece = (piece) => {
-    const pieceToSave = pieces[piece.attrs.id];
+    const pieceToSave = pieceDict[piece.attrs.id];
     pieceToSave.x = piece.x() / scale;
     pieceToSave.y = piece.y() / scale;
     set(ref(db, `pieces/${planId}/${piece.attrs.id}`), pieceToSave);
   };
 
-  // ---------------- useEffect --------------------
-
-  const loadImage = () => {
+  const loadImage = (src = "zelda2.png") => {
     const myImg = new Image();
-    myImg.src = "zelda2.png";
+    myImg.src = src;
+    myImg.crossOrigin = "Anonymous";
     myImg.onload = function() {
       setImage(this);
+      const bgImage = new Konva.Image({ width: Playground.width, height: Playground.height, image: this, opacity: 0.5 });
+      bgLayer.add(bgImage);
+      stageRef.current.add(bgLayer);
+      stageRef.current.add(pieceLayer);
     };
   };
 
+  // ---------------- useEffect --------------------
   useEffect(() => {
-    loadImage();
-    // console.log("hello")
-    // initializePieces();
-    const layer = new Konva.Layer();
-    setPieceLayer(layer);
-    stageRef.current.add(layer);
-  }, []);
-
-  // useEffect(() => {
-  //   if (pieces.length && pieceLayer) {
-  //     pieceLayer.removeChildren();
-  //     const myImg = new Image();
-  //     myImg.src = "zelda2.png";
-  //     myImg.onload = function() {
-  //       for (let i = 0; i < pieces.length; i++) {
-  //         const shape = pieces[i].getShape(this);
-  //         moveToRandomPos(shape);
-  //         pieceLayer.add(shape);
-  //       }
-  //       pieceLayer.zIndex(1);
-  //       pieceLayer.batchDraw();
-  //     };
-  //   }
-  // }, [pieces, pieceLayer]);
-
-  useEffect(() => {
-    if (!loading && snapshots && myImage) {
-      if (!pieces) {
-        getPieces();
-      } else {
-        updatePieces();
-      }
+    if (!myImage && !planLoading && plan) {
+      loadImage(plan.imageUrl);
     }
-  }, [snapshots, loading, myImage]);
+  }, [plan, planLoading]);
+
+  useEffect(() => {
+    if (!piecesLoading && pieces && myImage) {
+      updatePieces();
+    }
+  }, [pieces, piecesLoading, myImage]);
 
   return (
     <Stage
@@ -245,16 +169,19 @@ const Board = ({ planId, rows, cols }) => {
       width={Playground.width}
       height={window.innerHeight - stageOffsetY}
       ref={stageRef}
+      onDragStart={(e) => {
+        const pieceLayer = stageRef.current.children.find((x) => x.attrs.name === "pieceLayer");
+        const index = pieceLayer.children.indexOf(e.target);
+        pieceLayer.children.splice(index, 1);
+        pieceLayer.children.push(e.target);
+      }}
       onDragMove={(e) => {
-        onMouseMove(e.evt, e.target);
+        onMouseMove(e.target);
       }}
       onDragEnd={(e) => {
         savePiece(e.target);
       }}
     >
-      <Layer listening={false}>
-        <PuzzleImage width={Playground.width} height={Playground.height} />
-      </Layer>
     </Stage>
   );
 };
