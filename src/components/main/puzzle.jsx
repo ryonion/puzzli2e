@@ -31,9 +31,9 @@ const Board = ({ planId, rows, cols }) => {
         // todo: shorten
         context.beginPath();
         context.drawImage(image, piece.colIndex * image.naturalWidth / cols,
-            piece.rowIndex * image.naturalHeight / rows,
-            image.naturalWidth / cols,
-            image.naturalHeight / rows, 0, 0, scaledWidth, scaledHeight);
+          piece.rowIndex * image.naturalHeight / rows,
+          image.naturalWidth / cols,
+          image.naturalHeight / rows, 0, 0, scaledWidth, scaledHeight);
         context.rect(0, 0, scaledWidth, scaledHeight);
         context.closePath();
         context.fillStrokeShape(shape);
@@ -142,7 +142,7 @@ const Board = ({ planId, rows, cols }) => {
     myImg.crossOrigin = "Anonymous";
     myImg.onload = function() {
       setImage(this);
-      const bgImage = new Konva.Image({ width: Playground.width, height: Playground.height, image: this, opacity: 0.5 });
+      const bgImage = new Konva.Image({ width: Playground.width, height: Playground.height, image: this, opacity: 0.4 });
       bgLayer.add(bgImage);
       stageRef.current.add(bgLayer);
       stageRef.current.add(pieceLayer);

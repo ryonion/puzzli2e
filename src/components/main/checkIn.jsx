@@ -24,8 +24,8 @@ const Box = ({
     >
       {
         checked
-        ? <>X</>
-        : <></>
+          ? <>X</>
+          : <></>
       }
     </div>
   );
@@ -108,20 +108,20 @@ const CheckIn = ({
     <>
       {plan
         ? (
-            <div className="box-container">
-              {boxValues.map((val, idx) => {
-                return (
-                  <Box
-                    key={idx}
-                    index={idx}
-                    checked={val}
-                    enabled={idx === currentIdx || idx === currentIdx + 1}
-                    onClick={toggleChecked}
-                  />
-                );
-              })}
-            </div>
-          )
+          <div className="box-container">
+            {boxValues.map((val, idx) => {
+              return (
+                <Box
+                  key={idx}
+                  index={idx}
+                  checked={val}
+                  enabled={idx === currentIdx || idx === currentIdx + 1}
+                  onClick={toggleChecked}
+                />
+              );
+            })}
+          </div>
+        )
         : null
       }
     </>

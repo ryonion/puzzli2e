@@ -15,22 +15,22 @@ function handleUpload(file, setPercent, userId, planId, setError) {
   const uploadTask = uploadBytesResumable(storageRef, file);
 
   uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const percent = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
-        );
+    "state_changed",
+    (snapshot) => {
+      const percent = Math.round(
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+      );
 
-        // update progress
-        setPercent(percent);
-      },
-      (err) => setError(err),
-      () => {
-        // download url
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          updatePlan(planId, "imageUrl", url);
-        });
-      },
+      // update progress
+      setPercent(percent);
+    },
+    (err) => setError(err),
+    () => {
+      // download url
+      getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+        updatePlan(planId, "imageUrl", url);
+      });
+    },
   );
 };
 

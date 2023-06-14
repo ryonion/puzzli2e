@@ -17,6 +17,7 @@ import Navi from "components/navi";
 import { useRecoilState } from "recoil";
 import { userState } from "atoms";
 import { createUser } from "components/auth/auth";
+import Container from "react-bootstrap/Container";
 
 const App = () => {
   const [user, loading] = useAuthState(auth);
@@ -43,12 +44,15 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <Navi />
-      <Routes>
-        <Route path="/" element={<PlanList />} />
-        <Route path="/:id" element={<Main />} />
-        <Route path="/plans" element={<PlanList />} />
-      </Routes>
+      <Container fluid="sm">
+        <Navi />
+        <Routes>
+          <Route path="/" element={<PlanList />} />
+          <Route path="/:id" element={<Main />} />
+          <Route path="/plans" element={<PlanList />} />
+        </Routes>
+      </Container>
+
     </BrowserRouter>
   );
 };

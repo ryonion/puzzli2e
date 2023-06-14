@@ -1,11 +1,21 @@
 :jigsaw:Puzzlize your goals
 
-# HOW TO RUN:
-1. 
+# How to run:
+
+```
+npm start
+```
+
+# HOW TO deploy:
+
+1.
+
 ```
 npm run build
 ```
-2. 
+
+2.
+
 ```
 firebase deploy
 ```
